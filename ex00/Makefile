@@ -1,7 +1,7 @@
 NAME            =   btc
 
 CXX             =   c++
-CXXFLAGS        =   -W -std=c++98 -Iinclude -MMD -MP -fsanitize=address -g3
+CXXFLAGS        =   -Wall -Werror -Wextra -std=c++98 -Iinclude -MMD -MP
 
 BUILD_DIR       =   __build
 SRC_DIR         =   srcs
