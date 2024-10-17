@@ -1,6 +1,8 @@
 #include "RPN.hpp"
+#include <iostream>
 #include <stack>
 #include <stdexcept>
+#include <sstream>
 
 RPN::RPN()
 {
@@ -24,26 +26,29 @@ RPN::~RPN()
 int RPN::evaluateExpression(const std::string &expr)
 {
 	std::stack<int> nbrs;
+	std::istringstream iss(expr);
 
-	for (std::size_t i = 0; i < expr.size(); i++)
+	while (!(iss >> std::ws).eof())
 	{
-		while (std::isspace(expr[i]) && i < expr.size())
-			i++;
-		if (i >= expr.size())
-			break ;
+		int	nbr;
+		char op;
+		std::streampos pos = iss.tellg();
 
-		if (std::isdigit(expr[i]))
+		if (iss >> nbr)
 		{
-			nbrs.push(expr[i] - '0');
+			nbrs.push(nbr);
 			continue ;
 		}
-
+		iss.clear();
+		iss.seekg(pos);
+		
 		if (nbrs.size() < 2)
 			throw std::runtime_error("invalid expression");
 		int b = nbrs.top(); nbrs.pop();
 		int a = nbrs.top(); nbrs.pop();
 
-		switch (expr[i])
+		iss >> std::ws >> op;
+		switch (op)
 		{
 			case '+':
 				nbrs.push(a + b);
@@ -61,6 +66,7 @@ int RPN::evaluateExpression(const std::string &expr)
 				throw std::runtime_error("invalid expression");
 		}
 	}
+	
 	if (nbrs.size() != 1)
 		throw std::runtime_error("invalid expression");
 	return nbrs.top();
