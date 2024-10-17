@@ -1,10 +1,10 @@
 NAME            =   btc
 
 CXX             =   c++
-CXXFLAGS        =   -W -std=c++98 -I. -MMD -MP -fsanitize=address -g3
+CXXFLAGS        =   -W -std=c++98 -Iinclude -MMD -MP -fsanitize=address -g3
 
 BUILD_DIR       =   __build
-SRC_DIR         =   .
+SRC_DIR         =   srcs
 
 SRC             =   $(shell find $(SRC_DIR) -type f -name '*.cpp')
 OBJ             =   $(SRC:$(SRC_DIR)/%.cpp=$(BUILD_DIR)/%.o)
