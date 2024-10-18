@@ -1,7 +1,7 @@
 NAME            =   RPN
 
 CXX             =   c++
-CXXFLAGS        =   -Wall -Werrr -Wextra -std=c++98  -I. -MMD -MP
+CXXFLAGS        =   -Wall -Werror -Wextra -std=c++98  -I. -MMD -MP
 
 BUILD_DIR       =   __build
 SRC_DIR         =   srcs
