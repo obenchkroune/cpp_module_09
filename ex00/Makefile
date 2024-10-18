@@ -1,7 +1,7 @@
 NAME            =   btc
 
 CXX             =   c++
-CXXFLAGS        =   -Wall -Werror -Wextra -std=c++98 -MMD -MP
+CXXFLAGS        =   -Wall -Werror -Wextra -std=c++98 -I. -MMD -MP
 
 BUILD_DIR       =   __build
 SRC_DIR         =   srcs
