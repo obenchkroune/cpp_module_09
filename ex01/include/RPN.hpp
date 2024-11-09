@@ -2,4 +2,5 @@
 
 #include <string>
 
-int RPN(const std::string& expression);
+std::string collect_input(int ac, char** av);
+int         RPN(const std::string& expression);

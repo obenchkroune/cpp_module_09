@@ -52,3 +52,15 @@ int RPN(const std::string& expression)
         throw std::runtime_error("Error");
     return nbrs.top();
 }
+
+std::string collect_input(int ac, char** av)
+{
+    std::string input;
+
+    for (int i = 1; i < ac; i++)
+    {
+        input += av[i];
+        input += " ";
+    }
+    return input;
+}
