@@ -1,0 +1,7 @@
+**/.cache
+**/compile_commands.json
+**/__build__
+
+ex00/btc
+ex00/data.csv
+ex00/input.txt
