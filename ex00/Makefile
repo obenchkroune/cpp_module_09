@@ -6,7 +6,8 @@ CXXFLAGS        =   -Wall -Werror -Wextra -std=c++98 -MMD -MP -I include
 BUILD_DIR       =   __build__
 SRC_DIR         =   srcs
 
-SRC             =   $(shell find $(SRC_DIR) -type f -name '*.cpp')
+SRC             =   srcs/main.cpp \
+					srcs/BitcoinExchange.cpp
 OBJ             =   $(SRC:$(SRC_DIR)/%.cpp=$(BUILD_DIR)/%.o)
 DEP             =   $(OBJ:.o=.d)
 

@@ -6,8 +6,8 @@ CXXFLAGS        =   -Wall -Werror -Wextra -std=c++98 -MMD -MP -I include
 BUILD_DIR       =   __build__
 SRC_DIR         =   srcs
 
-SRC             =   ./srcs/main.cpp \
-					./srcs/PmergeMe.cpp
+SRC             =   srcs/main.cpp \
+					srcs/PmergeMe.cpp
 OBJ             =   $(SRC:$(SRC_DIR)/%.cpp=$(BUILD_DIR)/%.o)
 DEP             =   $(OBJ:.o=.d)
 
