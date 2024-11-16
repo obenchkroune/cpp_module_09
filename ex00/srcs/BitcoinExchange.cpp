@@ -15,7 +15,7 @@ std::string to_string(float val)
     return oss.str();
 }
 
-std::string str_trim(const std::string& str)
+std::string str_trim(const std::string &str)
 {
     std::string::const_iterator         it  = str.begin();
     std::string::const_reverse_iterator rit = str.rbegin();
@@ -26,7 +26,7 @@ std::string str_trim(const std::string& str)
     return std::string(it, rit.base());
 }
 
-bool validate_date(const std::string& date)
+bool validate_date(const std::string &date)
 {
     std::string trimmed = str_trim(date);
     if (trimmed.size() != 10)
@@ -63,12 +63,12 @@ BitcoinExchange::BitcoinExchange()
 {
 }
 
-BitcoinExchange::BitcoinExchange(const BitcoinExchange& other)
+BitcoinExchange::BitcoinExchange(const BitcoinExchange &other)
 {
     (void)other;
 }
 
-BitcoinExchange& BitcoinExchange::operator=(const BitcoinExchange& other)
+BitcoinExchange &BitcoinExchange::operator=(const BitcoinExchange &other)
 {
     (void)other;
     return *this;
@@ -78,7 +78,7 @@ BitcoinExchange::~BitcoinExchange()
 {
 }
 
-void BitcoinExchange::insertDatabaseRow(const std::string& date, float exchangeRate)
+void BitcoinExchange::insertDatabaseRow(const std::string &date, float exchangeRate)
 {
     if (validate_date(date) == false)
         throw std::runtime_error("invalid database date format: " + date);
@@ -87,7 +87,7 @@ void BitcoinExchange::insertDatabaseRow(const std::string& date, float exchangeR
     _database[date] = exchangeRate;
 }
 
-void BitcoinExchange::loadDatabase(const std::string& filename)
+void BitcoinExchange::loadDatabase(const std::string &filename)
 {
     std::ifstream ifs(filename.c_str());
     if (!ifs.is_open())
@@ -108,7 +108,7 @@ void BitcoinExchange::loadDatabase(const std::string& filename)
     }
 }
 
-void BitcoinExchange::processInput(const std::string& input)
+void BitcoinExchange::processInput(const std::string &input)
 {
     std::ifstream ifs(input.c_str());
     if (!ifs.is_open())
