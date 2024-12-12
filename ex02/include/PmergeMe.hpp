@@ -1,33 +1,22 @@
 #pragma once
 
 #include <list>
+#include <sstream>
+#include <stdexcept>
+#include <stdint.h>
 #include <vector>
 
-struct Pair
-{
-    Pair(int small, int large) : small(small), large(large)
-    {
-    }
-    ~Pair()
-    {
-    }
+#define USAGE         "Usage: PmergeMe <numbers> [numbers ...]"
+#define INVALID_INPUT "invalid input"
 
-    int small;
-    int large;
-};
+namespace PmergeMe {
 
-class PmergeMe
-{
-public:
-    static void sortVector(std::vector<int> &vec);
-    static void sortList(std::list<int> &lst);
+std::vector<uint32_t> parse_args(int ac, char** av);
+int                   jacobsthal(int n);
+void                  jacobsthal_insert(std::vector<uint32_t>& vec, uint32_t n);
+void                  jacobsthal_insert(std::list<uint32_t>& lst, uint32_t n);
+void                  sort(std::vector<uint32_t>& vec);
+void                  sort(std::list<uint32_t>& lst);
+size_t                get_comparison_count();
 
-private:
-    PmergeMe();
-    PmergeMe(const PmergeMe &other);
-    PmergeMe &operator=(const PmergeMe &other);
-    ~PmergeMe();
-
-    static std::vector<Pair> makeVectorPairs(std::vector<int> &vec);
-    static std::list<Pair>   makeListPairs(std::list<int> &lst);
-};
+}; // namespace PmergeMe
