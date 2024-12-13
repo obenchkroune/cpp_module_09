@@ -1,6 +1,7 @@
 **/.cache
 **/compile_commands.json
 **/__build__
+**/.vscode
 
 ex00/btc
 ex00/data.csv
