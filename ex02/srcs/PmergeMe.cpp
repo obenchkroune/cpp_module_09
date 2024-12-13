@@ -4,8 +4,6 @@
 
 namespace PmergeMe {
 
-static size_t comparison_count = 0;
-
 std::vector<uint32_t> parse_args(int ac, char** av) {
     if (ac < 2) {
         throw std::runtime_error(USAGE);
@@ -62,7 +60,6 @@ void jacobsthal_insert(std::vector<uint32_t>& vec, uint32_t n) {
         } else {
             right = mid;
         }
-        comparison_count++;
     }
     vec.insert(vec.begin() + left, n);
 }
@@ -100,7 +97,6 @@ void sort(std::vector<uint32_t>& vec) {
             larger_values.push_back(vec[i]);
             smaller_values.push_back(vec[i + 1]);
         }
-        comparison_count++;
     }
     sort(larger_values);
     vec.swap(larger_values);
@@ -117,14 +113,6 @@ void sort(std::vector<uint32_t>& vec) {
 void sort(std::list<uint32_t>& lst) {
     (void)lst;
     throw std::runtime_error("Not implemented");
-}
-
-size_t get_comparison_count() {
-    return comparison_count;
-}
-
-void reset_comparison_count() {
-    comparison_count = 0;
 }
 
 }; // namespace PmergeMe
