@@ -64,9 +64,27 @@ void jacobsthal_insert(std::vector<uint32_t>& vec, uint32_t n) {
     vec.insert(vec.begin() + left, n);
 }
 
-void jacobsthal_insert(std::list<uint32_t>& lst, uint32_t n) {
-    (void)lst, (void)n;
-    throw std::runtime_error("Not implemented");
+void jacobsthal_insert(std::deque<uint32_t>& deq, uint32_t n) {
+    if (deq.size() == 0) {
+        deq.push_back(n);
+        return;
+    }
+
+    std::size_t left = 0, right = deq.size();
+    while (left < right) {
+        std::size_t mid = left + jacobsthal(static_cast<int>(log2(right - left)));
+
+        if (mid >= right) {
+            mid = right - 1;
+        }
+
+        if (deq[mid] < n) {
+            left = mid + 1;
+        } else {
+            right = mid;
+        }
+    }
+    deq.insert(deq.begin() + left, n);
 }
 
 void sort(std::vector<uint32_t>& vec) {
@@ -74,12 +92,10 @@ void sort(std::vector<uint32_t>& vec) {
         return;
     }
 
-    std::vector<uint32_t> sorted;
-    bool                  is_odd = vec.size() % 2;
-    uint32_t              odd_nbr;
+    bool     is_odd = vec.size() % 2;
+    uint32_t odd_nbr;
 
     if (is_odd) {
-        sorted.push_back(vec.back());
         odd_nbr = vec.back();
         vec.pop_back();
     }
@@ -110,9 +126,63 @@ void sort(std::vector<uint32_t>& vec) {
     }
 }
 
-void sort(std::list<uint32_t>& lst) {
-    (void)lst;
-    throw std::runtime_error("Not implemented");
+void sort(std::deque<uint32_t>& lst) {
+    if (lst.size() < 2) {
+        return;
+    }
+
+    bool     is_odd = lst.size() % 2;
+    uint32_t odd_nbr;
+
+    if (is_odd) {
+        odd_nbr = lst.back();
+        lst.pop_back();
+    }
+
+    std::deque<uint32_t> smaller_values;
+    std::deque<uint32_t> larger_values;
+
+    for (std::size_t i = 0; i < lst.size(); i += 2) {
+        if (lst[i] < lst[i + 1]) {
+            larger_values.push_back(lst[i + 1]);
+            smaller_values.push_back(lst[i]);
+        } else {
+            larger_values.push_back(lst[i]);
+            smaller_values.push_back(lst[i + 1]);
+        }
+    }
+    sort(larger_values);
+    lst.swap(larger_values);
+
+    for (std::size_t i = 0; i < smaller_values.size(); i++) {
+        jacobsthal_insert(lst, smaller_values[i]);
+    }
+
+    if (is_odd) {
+        jacobsthal_insert(lst, odd_nbr);
+    }
+}
+
+bool is_equal(const std::vector<uint32_t>& vec, const std::deque<uint32_t>& deq) {
+    if (vec.size() != deq.size()) {
+        return false;
+    }
+
+    for (std::size_t i = 0; i < vec.size(); i++) {
+        if (vec[i] != deq[i]) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool is_sorted(const std::vector<uint32_t>& vec) {
+    for (std::size_t i = 0; i < vec.size() - 1; i++) {
+        if (vec[i] > vec[i + 1]) {
+            return false;
+        }
+    }
+    return true;
 }
 
 }; // namespace PmergeMe

@@ -1,8 +1,8 @@
 #pragma once
 
 #include <ctime>
+#include <deque>
 #include <iostream>
-#include <list>
 #include <sstream>
 #include <stdexcept>
 #include <stdint.h>
@@ -16,10 +16,11 @@ namespace PmergeMe {
 std::vector<uint32_t> parse_args(int ac, char** av);
 int                   jacobsthal(int n);
 void                  jacobsthal_insert(std::vector<uint32_t>& vec, uint32_t n);
-void                  jacobsthal_insert(std::list<uint32_t>& lst, uint32_t n);
+void                  jacobsthal_insert(std::deque<uint32_t>& deq, uint32_t n);
 void                  sort(std::vector<uint32_t>& vec);
-void                  sort(std::list<uint32_t>& lst);
-size_t                get_comparison_count();
+void                  sort(std::deque<uint32_t>& deq);
+bool                  is_equal(const std::vector<uint32_t>& vec, const std::deque<uint32_t>& deq);
+bool                  is_sorted(const std::vector<uint32_t>& vec);
 
 template <typename Container>
 void print_container(const Container& data) {
