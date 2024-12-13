@@ -3,8 +3,7 @@
 #include <map>
 #include <string>
 
-class BitcoinExchange
-{
+class BitcoinExchange {
 public:
     static void loadDatabase(const std::string& filename);
     static void processInput(const std::string& input);

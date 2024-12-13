@@ -6,8 +6,7 @@
 #include <sstream>
 #include <stdexcept>
 
-std::string to_string(float val)
-{
+std::string to_string(float val) {
     std::ostringstream oss;
     oss << val;
     if (oss.fail())
@@ -15,8 +14,7 @@ std::string to_string(float val)
     return oss.str();
 }
 
-std::string str_trim(const std::string &str)
-{
+std::string str_trim(const std::string& str) {
     std::string::const_iterator         it  = str.begin();
     std::string::const_reverse_iterator rit = str.rbegin();
     while (it != str.end() && isspace(*it))
@@ -26,8 +24,7 @@ std::string str_trim(const std::string &str)
     return std::string(it, rit.base());
 }
 
-bool validate_date(const std::string &date)
-{
+bool validate_date(const std::string& date) {
     std::string trimmed = str_trim(date);
     if (trimmed.size() != 10)
         return false;
@@ -40,46 +37,40 @@ bool validate_date(const std::string &date)
     /* check if the values make sense */
     if (year < 0 || month < 1 || month > 12 || day < 1 || day > 31)
         return false;
-    switch (month)
-    {
-        case 2:
-            if ((year % 4 != 0 || (year % 100 == 0 && year % 400 != 0)))
-                return day <= 28;
-            return day <= 29;
-            break;
-        case 4:
-        case 6:
-        case 9:
-        case 11:
-            return day <= 30;
-            break;
+    switch (month) {
+    case 2:
+        if ((year % 4 != 0 || (year % 100 == 0 && year % 400 != 0)))
+            return day <= 28;
+        return day <= 29;
+        break;
+    case 4:
+    case 6:
+    case 9:
+    case 11:
+        return day <= 30;
+        break;
     }
     return true;
 }
 
 std::map<std::string, float> BitcoinExchange::_database;
 
-BitcoinExchange::BitcoinExchange()
-{
+BitcoinExchange::BitcoinExchange() {
 }
 
-BitcoinExchange::BitcoinExchange(const BitcoinExchange &other)
-{
+BitcoinExchange::BitcoinExchange(const BitcoinExchange& other) {
     (void)other;
 }
 
-BitcoinExchange &BitcoinExchange::operator=(const BitcoinExchange &other)
-{
+BitcoinExchange& BitcoinExchange::operator=(const BitcoinExchange& other) {
     (void)other;
     return *this;
 }
 
-BitcoinExchange::~BitcoinExchange()
-{
+BitcoinExchange::~BitcoinExchange() {
 }
 
-void BitcoinExchange::insertDatabaseRow(const std::string &date, float exchangeRate)
-{
+void BitcoinExchange::insertDatabaseRow(const std::string& date, float exchangeRate) {
     if (validate_date(date) == false)
         throw std::runtime_error("invalid database date format: " + date);
     if (exchangeRate < 0)
@@ -87,8 +78,7 @@ void BitcoinExchange::insertDatabaseRow(const std::string &date, float exchangeR
     _database[date] = exchangeRate;
 }
 
-void BitcoinExchange::loadDatabase(const std::string &filename)
-{
+void BitcoinExchange::loadDatabase(const std::string& filename) {
     std::ifstream ifs(filename.c_str());
     if (!ifs.is_open())
         throw std::runtime_error("failed to open file: " + filename);
@@ -98,8 +88,7 @@ void BitcoinExchange::loadDatabase(const std::string &filename)
     std::string line;
     std::string date;
     float       exchangeRate;
-    while (std::getline(ifs >> std::ws, line))
-    {
+    while (std::getline(ifs >> std::ws, line)) {
         std::istringstream iss(line);
 
         if (!std::getline(iss, date, ',') || !validate_date(date) || !(iss >> exchangeRate))
@@ -108,8 +97,7 @@ void BitcoinExchange::loadDatabase(const std::string &filename)
     }
 }
 
-void BitcoinExchange::processInput(const std::string &input)
-{
+void BitcoinExchange::processInput(const std::string& input) {
     std::ifstream ifs(input.c_str());
     if (!ifs.is_open())
         throw std::runtime_error("failed to open file: " + input);
@@ -119,8 +107,7 @@ void BitcoinExchange::processInput(const std::string &input)
     float       exchangeRate;
 
     ifs.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-    while (std::getline(ifs >> std::ws, line))
-    {
+    while (std::getline(ifs >> std::ws, line)) {
         std::istringstream iss(line);
         if (!std::getline(iss, date, '|') || !validate_date(date))
             std::cerr << "Error: bad input => " << line << '\n';
@@ -130,8 +117,7 @@ void BitcoinExchange::processInput(const std::string &input)
             std::cerr << "Error: not a positive number.\n";
         else if (exchangeRate > 1000)
             std::cerr << "Error: too large a number.\n";
-        else
-        {
+        else {
             std::map<std::string, float>::const_iterator it = _database.upper_bound(date);
 
             if (it == _database.end())
