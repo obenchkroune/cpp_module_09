@@ -1,4 +1,5 @@
 #include "PmergeMe.hpp"
+#include <iostream>
 #include <math.h>
 
 namespace PmergeMe {
@@ -19,17 +20,14 @@ std::vector<uint32_t> parse_args(int ac, char** av) {
     vec.reserve(ac);
 
     while (ss >> std::ws && !ss.eof()) {
-        uint32_t n;
-        if (ss >> n) {
-            vec.push_back(n);
-        } else {
-            break;
+        if (!std::isdigit(ss.peek())) {
+            throw std::runtime_error(INVALID_INPUT);
         }
+        uint32_t n;
+        ss >> n;
+        vec.push_back(n);
     }
 
-    if (ss.fail()) {
-        throw std::runtime_error(INVALID_INPUT);
-    }
     return vec;
 }
 
@@ -70,6 +68,7 @@ void jacobsthal_insert(std::vector<uint32_t>& vec, uint32_t n) {
 }
 
 void jacobsthal_insert(std::list<uint32_t>& lst, uint32_t n) {
+    (void)lst, (void)n;
     throw std::runtime_error("Not implemented");
 }
 
@@ -116,6 +115,7 @@ void sort(std::vector<uint32_t>& vec) {
 }
 
 void sort(std::list<uint32_t>& lst) {
+    (void)lst;
     throw std::runtime_error("Not implemented");
 }
 

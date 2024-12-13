@@ -6,28 +6,23 @@
 #include "PmergeMe.hpp"
 
 int main(int ac, char** av) {
-    std::vector<uint32_t> vec;
 
     try {
-        vec = PmergeMe::parse_args(ac, av);
+        std::vector<uint32_t> vec = PmergeMe::parse_args(ac, av);
+        std::cout << "Before : ";
+        PmergeMe::print_container(vec);
+
+        double vector_benchmark = PmergeMe::benchmark(PmergeMe::sort, vec);
+
+        std::cout << "After  : ";
+        PmergeMe::print_container(vec);
+
+        std::cout << "Time to process a range of " << vec.size()
+                  << " elements with std::vector : " << vector_benchmark << " us" << std::endl;
+
+        return 0;
     } catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;
         return 1;
     }
-
-    std::cout << "Before:" << std::endl;
-    for (std::vector<uint32_t>::const_iterator it = vec.begin(); it != vec.end(); ++it) {
-        std::cout << *it << " ";
-    }
-    std::cout << std::endl;
-
-    PmergeMe::sort(vec);
-
-    std::cout << "Comparison count: " << PmergeMe::get_comparison_count() << std::endl;
-
-    std::cout << "After:" << std::endl;
-    for (std::vector<uint32_t>::const_iterator it = vec.begin(); it != vec.end(); ++it) {
-        std::cout << *it << " ";
-    }
-    return 0;
 }
