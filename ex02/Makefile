@@ -1,13 +1,12 @@
 NAME            =   PmergeMe
 
 CXX             =   c++
-CXXFLAGS        =   -Wall -Wextra -Werror -std=c++98 -MMD -MP -I include
+CXXFLAGS        =   -Wall -Wextra -Werror -std=c++98 -MMD -MP -I include# -g3 -fsanitize=address
 
 BUILD_DIR       =   __build__
 SRC_DIR         =   srcs
 
-SRC             =   srcs/main.cpp \
-					srcs/PmergeMe.cpp
+SRC             =   srcs/main.cpp srcs/PmergeMe.cpp
 OBJ             =   $(SRC:$(SRC_DIR)/%.cpp=$(BUILD_DIR)/%.o)
 DEP             =   $(OBJ:.o=.d)
 

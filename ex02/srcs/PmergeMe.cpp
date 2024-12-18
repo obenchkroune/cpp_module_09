@@ -1,6 +1,9 @@
 #include "PmergeMe.hpp"
+
 #include <iostream>
 #include <math.h>
+#include <sstream>
+#include <stdexcept>
 
 namespace PmergeMe {
 
@@ -49,7 +52,7 @@ void jacobsthal_insert(std::vector<uint32_t>& vec, uint32_t n) {
 
     std::size_t left = 0, right = vec.size();
     while (left < right) {
-        std::size_t mid = left + jacobsthal(floor(log2(right - left)));
+        std::size_t mid = left + jacobsthal(log2(right - left));
 
         if (mid >= right) {
             mid = right - 1;
@@ -64,27 +67,31 @@ void jacobsthal_insert(std::vector<uint32_t>& vec, uint32_t n) {
     vec.insert(vec.begin() + left, n);
 }
 
-void jacobsthal_insert(std::deque<uint32_t>& deq, uint32_t n) {
-    if (deq.size() == 0) {
-        deq.push_back(n);
+void jacobsthal_insert(std::list<uint32_t>& lst, uint32_t n) {
+    if (lst.size() == 0) {
+        lst.push_back(n);
         return;
     }
-
-    std::size_t left = 0, right = deq.size();
+    std::size_t left = 0, right = lst.size();
     while (left < right) {
-        std::size_t mid = left + jacobsthal(static_cast<int>(log2(right - left)));
+        std::size_t mid = left + jacobsthal(log2(right - left));
 
         if (mid >= right) {
             mid = right - 1;
         }
 
-        if (deq[mid] < n) {
+        std::list<uint32_t>::iterator it = lst.begin();
+        std::advance(it, mid);
+
+        if (*it < n) {
             left = mid + 1;
         } else {
             right = mid;
         }
     }
-    deq.insert(deq.begin() + left, n);
+    std::list<uint32_t>::iterator it = lst.begin();
+    std::advance(it, left);
+    lst.insert(it, n);
 }
 
 void sort(std::vector<uint32_t>& vec) {
@@ -126,7 +133,7 @@ void sort(std::vector<uint32_t>& vec) {
     }
 }
 
-void sort(std::deque<uint32_t>& lst) {
+void sort(std::list<uint32_t>& lst) {
     if (lst.size() < 2) {
         return;
     }
@@ -139,23 +146,30 @@ void sort(std::deque<uint32_t>& lst) {
         lst.pop_back();
     }
 
-    std::deque<uint32_t> smaller_values;
-    std::deque<uint32_t> larger_values;
+    std::list<uint32_t> smaller_values;
+    std::list<uint32_t> larger_values;
 
-    for (std::size_t i = 0; i < lst.size(); i += 2) {
-        if (lst[i] < lst[i + 1]) {
-            larger_values.push_back(lst[i + 1]);
-            smaller_values.push_back(lst[i]);
+    std::list<uint32_t>::iterator it = lst.begin();
+    while (it != lst.end()) {
+        std::list<uint32_t>::iterator next = it;
+        ++next;
+
+        if (*it < *next) {
+            larger_values.push_back(*next);
+            smaller_values.push_back(*it);
         } else {
-            larger_values.push_back(lst[i]);
-            smaller_values.push_back(lst[i + 1]);
+            larger_values.push_back(*it);
+            smaller_values.push_back(*next);
         }
+        ++it;
+        ++it;
     }
     sort(larger_values);
     lst.swap(larger_values);
 
-    for (std::size_t i = 0; i < smaller_values.size(); i++) {
-        jacobsthal_insert(lst, smaller_values[i]);
+    it = smaller_values.begin();
+    for (; it != smaller_values.end(); ++it) {
+        jacobsthal_insert(lst, *it);
     }
 
     if (is_odd) {
@@ -163,15 +177,20 @@ void sort(std::deque<uint32_t>& lst) {
     }
 }
 
-bool is_equal(const std::vector<uint32_t>& vec, const std::deque<uint32_t>& deq) {
-    if (vec.size() != deq.size()) {
+bool is_equal(const std::vector<uint32_t>& vec, const std::list<uint32_t>& lst) {
+    if (vec.size() != lst.size()) {
         return false;
     }
 
-    for (std::size_t i = 0; i < vec.size(); i++) {
-        if (vec[i] != deq[i]) {
+    std::list<uint32_t>::const_iterator   lst_it = lst.begin();
+    std::vector<uint32_t>::const_iterator vec_it = vec.begin();
+
+    while (lst_it != lst.end() && vec_it != vec.end()) {
+        if (*lst_it != *vec_it) {
             return false;
         }
+        ++lst_it;
+        ++vec_it;
     }
     return true;
 }
