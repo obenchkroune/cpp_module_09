@@ -13,21 +13,21 @@ static void sort_pairs(std::vector<std::pair<uint32_t, uint32_t> >& pairs) {
     if (pairs.size() < 2) return;
 
     std::vector<std::pair<uint32_t, uint32_t> >::iterator mid = pairs.begin() + pairs.size() / 2;
-
-    std::vector<std::pair<uint32_t, uint32_t> > left(pairs.begin(), mid);
-    std::vector<std::pair<uint32_t, uint32_t> > right(mid, pairs.end());
+    std::vector<std::pair<uint32_t, uint32_t> >           left(pairs.begin(), mid);
+    std::vector<std::pair<uint32_t, uint32_t> >           right(mid, pairs.end());
 
     sort_pairs(left);
     sort_pairs(right);
 
     std::vector<std::pair<uint32_t, uint32_t> > result;
-
-    std::size_t i = 0, j = 0;
+    std::size_t                                 i = 0, j = 0;
     while (i < left.size() && j < right.size()) {
         if (left[i].first < right[j].first) {
-            result.push_back(left[i++]);
+            result.push_back(left[i]);
+            i++;
         } else {
-            result.push_back(right[j++]);
+            result.push_back(right[j]);
+            j++;
         }
     }
     result.insert(result.end(), left.begin() + i, left.end());
@@ -35,7 +35,76 @@ static void sort_pairs(std::vector<std::pair<uint32_t, uint32_t> >& pairs) {
     pairs.swap(result);
 }
 
-static void sort_winners(std::list<std::pair<uint32_t, uint32_t> >& pairs) {
+static std::vector<std::size_t> compute_jacobsthal_indices(std::size_t n) {
+    std::vector<std::size_t> indices;
+    if (n == 0) return indices;
+    indices.push_back(1);
+    if (n == 1) return indices;
+    indices.push_back(3);
+    for (;;) {
+        std::size_t sz   = indices.size();
+        std::size_t next = indices[sz - 1] + 2 * indices[sz - 2];
+        if (next >= n) break;
+        indices.push_back(next);
+    }
+    return indices;
+}
+
+void sort_vector(std::vector<uint32_t>& vec) {
+    if (vec.size() < 2) return;
+    std::vector<std::pair<uint32_t, uint32_t> > pairs;
+
+    bool     has_stray = (vec.size() % 2 != 0);
+    uint32_t stray     = 0;
+    if (has_stray) {
+        stray = vec.back();
+        vec.pop_back();
+    }
+
+    for (std::size_t i = 0; i < vec.size(); i += 2) {
+        if (vec[i] > vec[i + 1])
+            pairs.push_back(std::make_pair(vec[i], vec[i + 1]));
+        else
+            pairs.push_back(std::make_pair(vec[i + 1], vec[i]));
+    }
+
+    sort_pairs(pairs);
+
+    std::vector<uint32_t> main;
+    std::vector<uint32_t> pend;
+    main.reserve(pairs.size() + 1);
+    pend.reserve(pairs.size() + 1);
+
+    typedef std::vector<std::pair<uint32_t, uint32_t> >::const_iterator PairConstIterator;
+    for (PairConstIterator it = pairs.begin(); it != pairs.end(); ++it) {
+        main.push_back(it->first);
+        pend.push_back(it->second);
+    }
+    if (has_stray) pend.push_back(stray);
+
+    std::vector<std::size_t> jacobsthal_indices = compute_jacobsthal_indices(pend.size());
+    std::vector<bool>        inserted(pend.size(), false);
+
+    for (std::size_t i = 0; i < jacobsthal_indices.size(); ++i) {
+        std::size_t idx = jacobsthal_indices[i] - 1;
+        if (idx >= pend.size()) break;
+        uint32_t value                      = pend[idx];
+        inserted[idx]                       = true;
+        std::vector<uint32_t>::iterator pos = std::lower_bound(main.begin(), main.end(), value);
+        main.insert(pos, value);
+    }
+
+    for (std::size_t i = 0; i < pend.size(); ++i) {
+        if (inserted[i] == true) continue;
+        uint32_t                        value = pend[i];
+        std::vector<uint32_t>::iterator pos   = std::lower_bound(main.begin(), main.end(), value);
+        main.insert(pos, value);
+    }
+
+    vec.swap(main);
+}
+
+static void sort_pairs(std::list<std::pair<uint32_t, uint32_t> >& pairs) {
     if (pairs.size() < 2) return;
 
     std::list<std::pair<uint32_t, uint32_t> >::iterator mid = pairs.begin();
@@ -44,8 +113,8 @@ static void sort_winners(std::list<std::pair<uint32_t, uint32_t> >& pairs) {
     std::list<std::pair<uint32_t, uint32_t> > left(pairs.begin(), mid);
     std::list<std::pair<uint32_t, uint32_t> > right(mid, pairs.end());
 
-    sort_winners(left);
-    sort_winners(right);
+    sort_pairs(left);
+    sort_pairs(right);
 
     std::list<std::pair<uint32_t, uint32_t> > result;
 
@@ -62,79 +131,6 @@ static void sort_winners(std::list<std::pair<uint32_t, uint32_t> >& pairs) {
     result.insert(result.end(), left_it, left.end());
     result.insert(result.end(), right_it, right.end());
     pairs.swap(result);
-}
-
-std::vector<std::size_t> jacobsthal(int n) {
-    // J(n)=J(n−1)+2J(n−2)
-    std::vector<std::size_t> numbers;
-    numbers.reserve(n);
-    numbers.push_back(3);
-    numbers.push_back(3);
-    for (int i = 5; i < n; ++i) {
-        numbers.push_back(numbers[i - 1] + 2 * numbers[i - 2]);
-    }
-    return numbers;
-}
-
-void sort_vector(std::vector<uint32_t>& vec) {
-    if (vec.size() < 2) return;
-    std::vector<std::pair<uint32_t, uint32_t> > pairs;
-
-    bool     has_stray = vec.size() % 2;
-    uint32_t stray;
-
-    if (has_stray) {
-        stray = vec.back();
-        vec.pop_back();
-    }
-
-    for (std::size_t i = 0; i < vec.size(); i += 2) {
-        if (vec[i] > vec[i + 1]) {
-            pairs.push_back(std::make_pair(vec[i], vec[i + 1]));
-        } else {
-            pairs.push_back(std::make_pair(vec[i + 1], vec[i]));
-        }
-    }
-
-    sort_pairs(pairs);
-
-    std::vector<uint32_t> main;
-    std::vector<uint32_t> pend;
-
-    main.reserve(pairs.size() * 2 + has_stray);
-    pend.reserve(pairs.size() + has_stray);
-
-    std::vector<std::pair<uint32_t, uint32_t> >::iterator pair_it = pairs.begin();
-    for (; pair_it != pairs.end(); ++pair_it) {
-        main.push_back(pair_it->first);
-        pend.push_back(pair_it->second);
-    }
-
-    if (has_stray) pend.push_back(stray);
-
-    std::vector<std::size_t> jacobsthal_indices = jacobsthal(pend.size());
-
-    for (std::size_t i = 0; i < jacobsthal_indices.size(); ++i) {
-        std::size_t index = jacobsthal_indices[i];
-        if (index >= pend.size()) break;
-
-        uint32_t value = pend[index];
-
-        std::vector<uint32_t>::iterator pos = std::lower_bound(main.begin(), main.end(), value);
-
-        main.insert(pos, value);
-        pend.erase(pend.begin() + index);
-    }
-
-    for (std::size_t i = 0; i < pend.size(); ++i) {
-        uint32_t value = pend[i];
-
-        std::vector<uint32_t>::iterator pos = std::lower_bound(main.begin(), main.end(), value);
-
-        main.insert(pos, value);
-    }
-
-    vec.swap(main);
 }
 
 void sort_list(std::list<uint32_t>& lst) {
@@ -158,7 +154,7 @@ void sort_list(std::list<uint32_t>& lst) {
         }
     }
 
-    sort_winners(pairs);
+    sort_pairs(pairs);
 
     std::list<uint32_t> main;
     std::list<uint32_t> pend;
@@ -170,27 +166,32 @@ void sort_list(std::list<uint32_t>& lst) {
     }
     if (has_stray) pend.push_back(stray);
 
-    std::vector<std::size_t> jacobsthal_indices = jacobsthal(pend.size());
+    std::vector<std::size_t> jacobsthal_indices = compute_jacobsthal_indices(pend.size());
+
+    std::list<uint32_t>::iterator it       = pend.begin();
+    size_t                        last_pos = 0;
+    std::vector<bool>             inserted(pend.size(), false);
 
     for (std::size_t i = 0; i < jacobsthal_indices.size(); ++i) {
-        std::size_t index = jacobsthal_indices[i];
-        if (index >= pend.size()) break;
+        std::size_t idx = jacobsthal_indices[i] - 1;
+        if (idx >= pend.size()) break;
 
-        std::list<uint32_t>::iterator it = pend.begin();
-        std::advance(it, index);
+        std::advance(it, idx - last_pos);
+        last_pos       = idx;
         uint32_t value = *it;
 
         std::list<uint32_t>::iterator pos = std::lower_bound(main.begin(), main.end(), value);
 
         main.insert(pos, value);
-        pend.erase(it);
+        inserted[idx] = true;
     }
 
+    size_t i = 0;
     for (std::list<uint32_t>::iterator it = pend.begin(); it != pend.end(); ++it) {
+        if (inserted[i++] == true) continue;
         uint32_t value = *it;
 
         std::list<uint32_t>::iterator pos = std::lower_bound(main.begin(), main.end(), value);
-
         main.insert(pos, value);
     }
 
