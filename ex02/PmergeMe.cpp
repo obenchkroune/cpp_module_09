@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 
+#include <algorithm>
 #include <cassert>
 #include <ctime>
 #include <iostream>
@@ -35,19 +36,22 @@ static void sort_pairs(std::vector<std::pair<uint32_t, uint32_t> >& pairs) {
     pairs.swap(result);
 }
 
-static std::vector<std::size_t> compute_jacobsthal_indices(std::size_t n) {
-    std::vector<std::size_t> indices;
-    if (n == 0) return indices;
-    indices.push_back(1);
-    if (n == 1) return indices;
-    indices.push_back(3);
-    for (;;) {
-        std::size_t sz   = indices.size();
-        std::size_t next = indices[sz - 1] + 2 * indices[sz - 2];
-        if (next >= n) break;
-        indices.push_back(next);
+static std::vector<std::size_t> jacobsthal(std::size_t n) {
+    std::vector<size_t> res;
+
+    res.push_back(3);
+    res.push_back(5);
+
+    size_t idx = 2;
+    while (1) {
+        size_t next = res[idx - 1] + 2 * res[idx - 2];
+        if (next >= n) {
+            break;
+        }
+        res.push_back(next);
+        ++idx;
     }
-    return indices;
+    return res;
 }
 
 void sort_vector(std::vector<uint32_t>& vec) {
@@ -80,25 +84,42 @@ void sort_vector(std::vector<uint32_t>& vec) {
         main.push_back(it->first);
         pend.push_back(it->second);
     }
+
     if (has_stray) pend.push_back(stray);
 
-    std::vector<std::size_t> jacobsthal_indices = compute_jacobsthal_indices(pend.size());
+    std::vector<std::size_t> jacobsthal_indices = jacobsthal(pend.size());
     std::vector<bool>        inserted(pend.size(), false);
+
+    size_t chain_length = 0;
 
     for (std::size_t i = 0; i < jacobsthal_indices.size(); ++i) {
         std::size_t idx = jacobsthal_indices[i] - 1;
         if (idx >= pend.size()) break;
-        uint32_t value                      = pend[idx];
-        inserted[idx]                       = true;
-        std::vector<uint32_t>::iterator pos = std::lower_bound(main.begin(), main.end(), value);
+        uint32_t value = pend[idx];
+        inserted[idx]  = true;
+
+        std::vector<uint32_t>::iterator start = main.begin();
+        std::vector<uint32_t>::iterator end   = main.begin() + idx + chain_length;
+
+        std::vector<uint32_t>::iterator pos = std::upper_bound(start, end, value);
+        // std::cout << value << ": search space from " << *start << " to " << *end << std::endl;
+        // print_container("chain", main);
         main.insert(pos, value);
+        ++chain_length;
     }
 
-    for (std::size_t i = 0; i < pend.size(); ++i) {
-        if (inserted[i] == true) continue;
-        uint32_t                        value = pend[i];
-        std::vector<uint32_t>::iterator pos   = std::lower_bound(main.begin(), main.end(), value);
+    for (std::size_t idx = 0; idx < pend.size(); ++idx) {
+        if (inserted[idx] == true) continue;
+
+        uint32_t value = pend[idx];
+
+        std::vector<uint32_t>::iterator start = main.begin();
+        std::vector<uint32_t>::iterator end   = main.begin() + idx + chain_length;
+        // std::cout << value << ": search space from " << *start << " to " << *end << std::endl;
+        // print_container("chain", main);
+        std::vector<uint32_t>::iterator pos = std::upper_bound(start, end, value);
         main.insert(pos, value);
+        ++chain_length;
     }
 
     vec.swap(main);
@@ -118,8 +139,8 @@ static void sort_pairs(std::list<std::pair<uint32_t, uint32_t> >& pairs) {
 
     std::list<std::pair<uint32_t, uint32_t> > result;
 
-    std::list<std::pair<uint32_t, uint32_t> >::iterator left_it  = left.begin(),
-                                                        right_it = right.begin();
+    std::list<std::pair<uint32_t, uint32_t> >::iterator left_it  = left.begin();
+    std::list<std::pair<uint32_t, uint32_t> >::iterator right_it = right.begin();
 
     while (left_it != left.end() && right_it != right.end()) {
         if (left_it->first < right_it->first) {
@@ -133,25 +154,23 @@ static void sort_pairs(std::list<std::pair<uint32_t, uint32_t> >& pairs) {
     pairs.swap(result);
 }
 
-void sort_list(std::list<uint32_t>& lst) {
-    if (lst.size() < 2) return;
+void sort_list(std::list<uint32_t>& vec) {
+    if (vec.size() < 2) return;
     std::list<std::pair<uint32_t, uint32_t> > pairs;
 
-    bool     has_stray = lst.size() % 2;
-    uint32_t stray;
-
+    bool     has_stray = (vec.size() % 2 != 0);
+    uint32_t stray     = 0;
     if (has_stray) {
-        stray = lst.back();
-        lst.pop_back();
+        stray = vec.back();
+        vec.pop_back();
     }
 
-    for (std::list<uint32_t>::iterator it = lst.begin(); it != lst.end(); ++it) {
-        uint32_t prev = *it++;
-        if (prev > *it) {
-            pairs.push_back(std::make_pair(prev, *it));
-        } else {
-            pairs.push_back(std::make_pair(*it, prev));
-        }
+    typedef std::list<uint32_t>::const_iterator ListConstIterator;
+    for (ListConstIterator it = vec.begin(); it != vec.end(); std::advance(it, 2)) {
+        if (*it > *next(it))
+            pairs.push_back(std::make_pair(*it, *next(it)));
+        else
+            pairs.push_back(std::make_pair(*next(it), *it));
     }
 
     sort_pairs(pairs);
@@ -159,43 +178,47 @@ void sort_list(std::list<uint32_t>& lst) {
     std::list<uint32_t> main;
     std::list<uint32_t> pend;
 
-    std::list<std::pair<uint32_t, uint32_t> >::iterator pair_it = pairs.begin();
-    for (; pair_it != pairs.end(); ++pair_it) {
-        main.push_back(pair_it->first);
-        pend.push_back(pair_it->second);
+    typedef std::list<std::pair<uint32_t, uint32_t> >::const_iterator PairConstIterator;
+    for (PairConstIterator it = pairs.begin(); it != pairs.end(); ++it) {
+        main.push_back(it->first);
+        pend.push_back(it->second);
     }
+
     if (has_stray) pend.push_back(stray);
 
-    std::vector<std::size_t> jacobsthal_indices = compute_jacobsthal_indices(pend.size());
+    std::vector<std::size_t> jacobsthal_indices = jacobsthal(pend.size());
+    std::vector<bool>        inserted(pend.size(), false);
 
-    std::list<uint32_t>::iterator it       = pend.begin();
-    size_t                        last_pos = 0;
-    std::vector<bool>             inserted(pend.size(), false);
-
+    size_t chain_length = 0;
     for (std::size_t i = 0; i < jacobsthal_indices.size(); ++i) {
         std::size_t idx = jacobsthal_indices[i] - 1;
         if (idx >= pend.size()) break;
+        ListConstIterator value_it = next(pend.begin(), idx);
+        inserted[idx]              = true;
 
-        std::advance(it, idx - last_pos);
-        last_pos       = idx;
-        uint32_t value = *it;
-
-        std::list<uint32_t>::iterator pos = std::lower_bound(main.begin(), main.end(), value);
-
-        main.insert(pos, value);
-        inserted[idx] = true;
+        std::list<uint32_t>::iterator pos =
+            std::upper_bound(main.begin(), next(main.begin(), idx + chain_length), *value_it);
+        // std::cout << value << ": search space from " << *start << " to " << *end << std::endl;
+        // print_container("chain", main);
+        main.insert(pos, *value_it);
+        ++chain_length;
     }
 
-    size_t i = 0;
-    for (std::list<uint32_t>::iterator it = pend.begin(); it != pend.end(); ++it) {
-        if (inserted[i++] == true) continue;
-        uint32_t value = *it;
+    for (std::size_t idx = 0; idx < pend.size(); ++idx) {
+        if (inserted[idx] == true) continue;
 
-        std::list<uint32_t>::iterator pos = std::lower_bound(main.begin(), main.end(), value);
-        main.insert(pos, value);
+        ListConstIterator value_it = next(pend.begin(), idx);
+        inserted[idx]              = true;
+
+        std::list<uint32_t>::iterator pos =
+            std::upper_bound(main.begin(), next(main.begin(), idx + chain_length), *value_it);
+        // std::cout << value << ": search space from " << *start << " to " << *end << std::endl;
+        // print_container("chain", main);
+        main.insert(pos, *value_it);
+        ++chain_length;
     }
 
-    lst.swap(main);
+    vec.swap(main);
 }
 
 std::string print_usage(const char* progname) {
@@ -221,6 +244,6 @@ std::vector<uint32_t> parse_numbers(int ac, char** av) {
 }
 
 void print_result(const char* container_name, double time_taken) {
-    std::cout << "Time to process a range of 5 elements with " << container_name
-              << "\t: " << time_taken << " us" << std::endl;
+    std::cout << "Time to process a range of 5 elements with " << container_name << "\t: " << time_taken << " µs"
+              << std::endl;
 }

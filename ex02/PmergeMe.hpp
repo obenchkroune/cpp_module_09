@@ -34,3 +34,10 @@ void print_container(const char* label, const Tp& vec) {
     }
     std::cout << std::endl;
 }
+
+template <typename Iterator>
+Iterator next(Iterator it, size_t n = 1) {
+    Iterator result = it;
+    std::advance(result, n);
+    return result;
+}

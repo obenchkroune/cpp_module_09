@@ -8,6 +8,18 @@
 
 #include "PmergeMe.hpp"
 
+template <typename Container>
+bool is_sorted(Container& container) {
+    typename Container::iterator it = container.begin();
+    if (it == container.end()) return true;
+    typename Container::value_type prev = *it++;
+    for (; it != container.end(); ++it) {
+        if (prev > *it) return false;
+        prev = *it;
+    }
+    return true;
+}
+
 int main(int ac, char** av) {
     if (ac < 2) {
         std::cerr << print_usage(av[0]) << std::endl;
@@ -27,7 +39,8 @@ int main(int ac, char** av) {
     print_result("std::vector", vec_time);
     print_result("std::list", lst_time);
 
-    assert(nbrs_vec == std::vector<uint32_t>(nbrs_lst.begin(), nbrs_lst.end()));
+    assert(is_sorted(nbrs_vec));
+    assert(is_sorted(nbrs_lst));
 
     return EXIT_SUCCESS;
 }
