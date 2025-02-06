@@ -1,21 +1,42 @@
 #pragma once
 
 #include <stdint.h>
+#include <sys/types.h>
 
 #include <ctime>
 #include <iostream>
 #include <list>
 #include <vector>
 
+struct ListPendNode {
+    uint32_t                      value;
+    std::list<uint32_t>::iterator end_it;
+    bool                          inserted;
+
+    ListPendNode(uint32_t value, std::list<uint32_t>::iterator it);
+};
+
+struct VectorPendNode {
+    uint32_t value;
+    bool     inserted;
+    size_t   idx;
+
+    VectorPendNode(uint32_t value, size_t idx);
+};
+
 void                  sort_vector(std::vector<uint32_t>& vec);
 void                  sort_list(std::list<uint32_t>& lst);
-void                  print_result(const char* container_name, double time_taken);
 std::vector<uint32_t> parse_numbers(int ac, char** av);
 std::string           print_usage(const char* progname);
 
 // ----------------------------------------------------------
-// templates
+// utils
 // ----------------------------------------------------------
+
+namespace util {
+
+void print_result(const char* container_name, double time_taken);
+
 template <typename Tp>
 double benchmark(Tp& nbrs, void (*sort_fn)(Tp&)) {
     timespec start, end;
@@ -36,8 +57,22 @@ void print_container(const char* label, const Tp& vec) {
 }
 
 template <typename Iterator>
-Iterator next(Iterator it, size_t n = 1) {
+Iterator next(Iterator it, ssize_t n = 1) {
     Iterator result = it;
     std::advance(result, n);
     return result;
 }
+
+template <typename Container>
+bool is_sorted(Container& container) {
+    typename Container::iterator it = container.begin();
+    if (it == container.end()) return true;
+    typename Container::value_type prev = *it++;
+    for (; it != container.end(); ++it) {
+        if (prev > *it) return false;
+        prev = *it;
+    }
+    return true;
+}
+
+};  // namespace util
